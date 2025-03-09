@@ -1,0 +1,62 @@
+services:
+  quaoar-sdk:
+    container_name: quaoar-sdk_${CONTAINER_NAME}
+    image: quaoarcad/quaoar-sdk:smru-2024.2.2-ubuntu-20.04-trial
+    volumes:
+      - ./data/${MEMBER_ID}:/quaoar-sdk/data/
+      - ./out/jsonOut/${MEMBER_ID}:/quaoar-sdk/out/
+    stdin_open: true  # 입력을 받을 수 있게 설정
+    tty: true         # 터미널 실행
+    env_file:
+      - ./metal_dynamic.env
+    #  
+    # asiSheetMetalExe process inspects the passed CAD file if it's a sheet metal part and
+    # asiSheetMetalExe process expects at least 2 parameters :
+    #
+    #   <input-filename>   The CAD file to be analyzed.
+    #   <output-filename>  The result Json file containing a recipe for the passed 3D model.
+    #
+    # The following list enumerates optional keys to active one or another check.
+    #
+    # [-aag]                                                  If the '-aag' key is used, the output JSON will include AAG objects for each body.
+    # [-asm]                                                  To keep the assembly document updated after processing (i.e. to apply face maximization
+    #                                                         and possibly other preprocessing effects), use the '-asm' key. This mode ensures that
+    #                                                         all produced parts have normalized geometry after inspection. This allows you to compare
+    #                                                         reported B-rep IDs (facial indices) to the real CAD geometry.
+    # [{-step | -stepWithColors}]                             If the '-step' key is used, the STEP files for each body will be saved 
+    #                                                         in the same directory as the JSON file.
+    #                                                         With the '-stepWithColors' key passed, the STEP file preserves colors according to the detected machining features.
+    # [{-gltf | -gltfWithColors} [-gltfScaleCoeff <coeff>]]   If the '-gltf' or '-gltfWithColors' key is used, the analyzed solids will be
+    #                                                         triangulated and saved in glTF format, with meshes per each CAD face.
+    #                                                         To scale the exported geometries, use the '-gltfScaleCoeff' parameter with a scaling
+    #                                                         value (default 1), as the SDK does not know about units.
+    # [-flat]                                                 Passing the '-flat' parameter will generate flat patterns for folded sheet metal
+    #                                                         parts that will be saved in BREP and DXF formats.  
+    # [-poly]                                                 If passed, contours of flat patterns will be converted to polyline in result .dxf file.
+    # [-k {<val>}]                                             The k-factor can be specified using the '-k' key. The k-factor can be defined as
+    #                                                         a floating-point value between 0 and 1.
+    # [-image <filename>]                                     To create a screenshot, use the '-image' parameter and provide a PNG filename.
+    # [-imagesForParts]                                       If the '-imagesForParts' key is used, thumbnail images will be generated 
+    #                                                         for each individual part. 
+    # [-thumbnailColor rgb(<red>, <green>, <blue>)]           To set color for dumped shapes, use the '-thumbnailColor' key with RGB components
+    #                                                         as unsigned integer values.
+    # [-profile]                                              If passed, recognition of "profile" sheet metal parts is ON, otherwise OFF.
+    # [-segments]                                             If the '-segments' parameter is used, the resulting JSON file will include additional
+    #                                                         information about the flat pattern's contour edges.
+    # [-expandCompounds]                                      If the '-expandCompounds' parameter is used, then all compound parts will automatically
+    #                                                         get broken down into their elementary components. Use this flag to turn compound parts
+    #                                                         into subassemblies.
+    # [-bentPipes]                                            If the '-bentPipes' key is passed, the recognition of bent pipes is ON, otherwise OFF.
+    # [-maxEngravingDepth <value>]                            Pass the '-maxEngravingDepth' key followed by a floating-point value to specify the
+    #                                                         max allowed depth for engraving features.
+    command: >
+      ./asiSheetMetalExe.sh 
+      "/quaoar-sdk/data/${STEP_FILE}" 
+      "/quaoar-sdk/out/${JSON_FILE}"
+      -profile -segments -flat -expandCompounds -k ${K_FACTOR} 
+      -gltf -step 
+      -stepWithColors
+#      -image "/quaoar-sdk/out/${MEMBER_ID}.png"
+      
+
+  

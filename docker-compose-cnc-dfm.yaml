@@ -1,0 +1,44 @@
+services:
+  quaoar-sdk:
+    container_name: quaoar-sdk
+    image: quaoarcad/quaoar-sdk:cnc-2024.2.2-ubuntu-20.04-trial
+    volumes:
+      - ./data:/quaoar-sdk/data/
+      - ./out:/quaoar-sdk/out/
+    stdin_open: true  # 입력을 받을 수 있게 설정
+    tty: true         # 터미널 실행
+    env_file:
+      - ./cnc_dynamic.env
+    #  
+    # asiCncExe.sh performs CNC analysis of the input CAD file expecting at least 2 parameters :
+    #
+    #   <input-filename>
+    #   <output-filename>
+    #
+    # The following list enumerates optional keys to active one or another check.
+    #
+    #   [-nv]                             The '-nv' flag indicates whether to calculate negative volumes for the recognized features.
+    #   [-blendRadius <r>]                Use '-blendRadius' parameter to set a limit for max blend radius.
+    #   [-holeRadius <r>]                 Use '-holeRadius' parameter to set a limit for max hole radius.
+    #   [-type {lathing|milling|default}] Use the '-type' key followed by the strategy name to enforce the desired recognition toolset.
+    #   [-step] [-stepWithColors]         If the '-step' key is used, the STEP file for the treated geometry will be saved in the same directory
+    #                                     as the result JSON file.
+    #                                     With the '-stepWithColors' key passed, the STEP file preserves colors according to the detected machining features.
+    #   [-gltf] [-gltfWithColors]         If the '-gltf' or '-gltfWithColors' key is used, the analyzed bodies will be
+    #                                     triangulated and saved in glTF format, with mesh groups corresponding to CAD faces.
+    #                                     The file(s) will be saved in the same directory as the result JSON file.
+    #   [-image]                          To create a screenshot, use the '-image' parameter and provide a PNG filename.
+    #   [-fx]                             Activates face accessibility check. This flag may optionally be followed with the -dir keyword 
+    #                                     enumerating all inspection directions. E.g., the following key combination activates accessibility tests in Z+, Y+ and X+ directions.
+    #                                     -fx -dir 0 0 1 0 1 0 1 0 0
+    #   [-ex]                             Activates edge accessibility check.
+    #   [-tx]                             Activates wall thickness check. This flag must be followed with the value of minimal allowed thickness.
+    #                                     -tx <minThickness>
+    #   [-cx]                             Activates clearance check. This flag must be followed with the value of minimal allowed clearance.
+    #                                     -cx <minClearance>
+    command: > 
+      ./asiCncExe.sh 
+      "/quaoar-sdk/data/${STEP_FILE}"
+      "/quaoar-sdk/out/${JSON_FILE}"
+      -tx 2 -stepWithColors
+  
