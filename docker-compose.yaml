@@ -3,8 +3,8 @@ services:
     container_name: quaoar-sdk_${CONTAINER_NAME}
     image: quaoarcad/quaoar-sdk:smru-2024.2.2-ubuntu-20.04-trial
     volumes:
-      - ./data/${MEMBER_ID}:/quaoar-sdk/data/
-      - ./out/jsonOut/${MEMBER_ID}:/quaoar-sdk/out/
+      - ./data/:/quaoar-sdk/data/
+      - ./out/:/quaoar-sdk/out/
     stdin_open: true  # 입력을 받을 수 있게 설정
     tty: true         # 터미널 실행
     env_file:
@@ -53,7 +53,7 @@ services:
       ./asiSheetMetalExe.sh 
       "/quaoar-sdk/data/${STEP_FILE}" 
       "/quaoar-sdk/out/${JSON_FILE}"
-      -profile -segments -flat -expandCompounds -k ${K_FACTOR} 
+      -profile -segments -flat -expandCompounds 
       -gltf -step 
       -stepWithColors
 #      -image "/quaoar-sdk/out/${MEMBER_ID}.png"
